@@ -1,0 +1,3 @@
+[run]
+source = pypiproxy
+omit = pypiproxy/tests.py
