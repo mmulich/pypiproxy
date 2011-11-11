@@ -25,3 +25,8 @@ def fake_app():
     global _app_was_hit
     _app_was_hit = False
     return simple_app
+
+def empty_wrapper(func):
+    def _dummy():
+        return func
+    return _dummy
