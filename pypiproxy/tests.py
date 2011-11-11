@@ -10,6 +10,7 @@ except ImportError:
         import unittest
 from wsgiref.util import setup_testing_defaults
 from webob import Request
+from webob.exc import HTTPFound, HTTPOk
 import wsgi_intercept
 from wsgi_intercept import httplib2_intercept
 from pypiproxy import testing
@@ -76,7 +77,25 @@ class ProxyTestCase(unittest.TestCase):
         self.assertTrue(response.body.find('car') >= 0)
 
     def test_proxies_302(self):
-        pass
+        redirect_to = '/over/there'
+        def three0two_app(environ, start_response):
+            if environ['PATH_INFO'] == redirect_to:
+                resp = HTTPOk()
+            else:
+                resp = HTTPFound(location=redirect_to)
+            return resp(environ, start_response)
+        app = testing.empty_wrapper(three0two_app)
+        self.add_intercept(app=app)
+        # Create the request
+        environ = {'PATH_INFO': '/simple/sake/',
+                   'wsgi.url_scheme': 'http',
+                   }
+        request = Request(environ)
+
+        from pypiproxy.main import PyPIProxy
+        app = PyPIProxy()
+        response = app.respond(request)
+        self.assertEqual(response.status, '200 OK')
 
 
 class CachedTestCase(unittest.TestCase):
