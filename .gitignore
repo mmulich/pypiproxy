@@ -1,0 +1,9 @@
+# Development #
+###############
+*.egg-info
+*.pyc
+
+# Emacs #
+#########
+*~
+
