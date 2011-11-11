@@ -42,7 +42,10 @@ class PyPIProxy(object):
 
         # Request the information from our proxy
         resp, content = self.http.request(address)
+        status = int(resp['status'])
+        del resp['status']
         response = Response()
+        response.status_int = status
         response.headerlist = resp.items()
         response.body = content
         return response
