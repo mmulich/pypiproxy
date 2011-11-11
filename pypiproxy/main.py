@@ -19,6 +19,17 @@ class PyPIProxy(object):
         response = self.respond(request)
         return response(environ, start_response)
 
+    def _gen_http(self):
+        """Factory method for the http property.
+        Can be used to override the default arguments."""
+        self._http = httplib2.Http()  ##'.cache') TODO Find a good location for cached data.
+
+    @property
+    def http(self):
+        if not hasattr(self, '_http'):
+            self._gen_http()
+        return self._http
+
     def respond(self, request):
         address_parts = dict(scheme=self.scheme,
                              host=self.host,
@@ -27,11 +38,10 @@ class PyPIProxy(object):
                              )
         address = "{scheme}://{host}:{port!s}{path}".format(**address_parts)
 
-        h = httplib2.Http()  ##'.cache') TODO Find a good location for cached data.
         # TODO Use HTTP cache-control headers.
 
         # Request the information from our proxy
-        resp, content = h.request(address)
+        resp, content = self.http.request(address)
         response = Response()
         response.headerlist = resp.items()
         response.body = content
