@@ -41,7 +41,22 @@ class ProxyTestCase(unittest.TestCase):
         self.addCleanup(wsgi_intercept.remove_wsgi_intercept, host, port)
 
     def test_for_wsgi_response(self):
-        pass
+        self.add_intercept()
+        # Create the request
+        environ = {'PATH_INFO': '/simple/sake/',
+                   'wsgi.url_scheme': 'http',
+                   'REQUEST_METHOD': 'GET',
+                   }
+        resp_info = {}
+        def faux_start_response(status, headers):
+            resp_info['status'] = status
+            resp_info.update(dict(headers))
+
+        from pypiproxy.main import PyPIProxy
+        app = PyPIProxy()
+        content = app(environ, faux_start_response)
+        self.assertTrue(content[0].find('intercept') >= 0)
+        self.assertTrue(testing.has_been_hit())
 
     def test_proxies(self):
         self.add_intercept()
